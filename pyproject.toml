@@ -1,0 +1,58 @@
+[project]
+name = "linkedin-outreach-crm"
+version = "1.0.0"
+description = "Autonomous LinkedIn outreach CRM: search, connect, DM after accept, and log every lead to Excel. Built on a local LinkedIn MCP server."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "outreach/LICENSE"]
+authors = [{ name = "Yash Yadav" }]
+keywords = ["linkedin", "mcp", "outreach", "crm", "playwright", "automation"]
+
+dependencies = [
+  # --- LinkedIn MCP server (the browser/tool layer) ---
+  "anyio>=4.5,<5",
+  "mcp[cli]>=1.27,<2",
+  "platformdirs>=4,<5",
+  "playwright>=1.54,<2",
+  "prometheus-client>=0.22,<1",
+  "pyrate-limiter>=4.4,<5",
+  "pydantic>=2.12,<3",
+  "pydantic-settings>=2.10,<3",
+  "structlog>=25,<26",
+  "uvicorn>=0.35,<1",
+  # --- Outreach orchestrator ---
+  "openpyxl>=3.1,<4",
+  "PyYAML>=6,<7",
+]
+
+[project.scripts]
+linkedin-mcp = "linkedin_mcp.__main__:main"
+linkedin-outreach = "outreach.main:main"
+
+[dependency-groups]
+dev = [
+  "pyright>=1.1.400,<2",
+  "ruff>=0.12,<1",
+]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/linkedin_mcp", "outreach"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "C4", "DTZ", "RUF", "SIM"]
+
+[tool.pyright]
+include = ["src", "outreach"]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"

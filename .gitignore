@@ -1,0 +1,58 @@
+# =============================================================================
+#  NEVER COMMIT ANYTHING BELOW.
+#  .env holds your campaign config; the Chromium profile holds a LIVE LinkedIn
+#  session; the database and workbook hold personal data about real people.
+# =============================================================================
+
+# --- Configuration (real values). .env.example IS committed. ---
+.env
+.env.*
+!.env.example
+
+# --- Outreach runtime state ---
+outreach_state.db
+outreach_state.db-wal
+outreach_state.db-shm
+campaigns.yaml
+!campaigns.example.yaml
+
+# Every workbook here is lead data about real people, and OUTREACH_EXCEL_PATH
+# is configurable — so ignore the extension, not just the default filename.
+*.xlsx
+*.xlsm
+# SQLite under any name, for the same reason (OUTREACH_DB_PATH is configurable).
+*.db
+*.db-wal
+*.db-shm
+
+# --- LinkedIn session / browser profile. Treat as a credential. ---
+profile/
+.linkedin-mcp/
+.action-writing-state/
+
+# --- Python ---
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- Playwright ---
+playwright-report/
+test-results/
+
+# --- Captured console output (may quote profile data) ---
+*_output.txt
+
+# --- Editors / OS ---
+.DS_Store
+.idea/
+.vscode/
+*.log

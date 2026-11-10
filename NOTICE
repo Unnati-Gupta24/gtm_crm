@@ -1,0 +1,21 @@
+LinkedIn Outreach CRM
+Copyright 2026 Yash Yadav
+
+This product includes software developed by Yash Yadav.
+
+================================================================================
+Original work
+================================================================================
+
+The outreach orchestrator is original work by Yash Yadav:
+
+    outreach/            the CRM: campaigns, state machine, caps, Excel logging
+    start.ps1            autonomous runner
+    search.ps1           pipeline fill
+    dm.ps1               pipeline drain
+    .env.example         configuration
+    campaigns.example.yaml
+
+    Copyright 2026 Yash Yadav
+    Licensed under the Apache License, Version 2.0.
+

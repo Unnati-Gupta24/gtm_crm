@@ -1,0 +1,97 @@
+name: LinkedIn Outreach
+
+# ---------------------------------------------------------------------------
+# REQUIRES A SELF-HOSTED WINDOWS RUNNER, labelled `linkedin-outreach`.
+#
+# GitHub-hosted runners cannot run this. They are ephemeral, so the persistent
+# Chromium profile holding the LinkedIn session is destroyed after every job.
+# Re-authenticating each run from a fresh datacentre IP reliably triggers
+# LinkedIn checkpoints and risks getting the account restricted. Putting
+# session cookies into GitHub Secrets to avoid that would mean live
+# credentials in CI - do not.
+#
+# Set the runner up on the machine where `.\start.ps1` already works.
+# See README.md -> GitHub Actions.
+# ---------------------------------------------------------------------------
+
+on:
+  schedule:
+    # Every 30 minutes. GitHub runs cron on a best-effort basis, so treat this
+    # as approximate. Exactly-once protection makes overlap harmless.
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        type: choice
+        default: dry-run
+        options: [dry-run, live]
+      stage:
+        description: "Which half of the funnel to run"
+        type: choice
+        default: all
+        options: [all, search, dm]
+      campaign_query:
+        description: "Override OUTREACH_SEARCH_QUERY (blank = use .env)"
+        type: string
+        default: ""
+
+concurrency:
+  # One LinkedIn session and one browser profile: never run two at once.
+  group: linkedin-outreach
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  outreach:
+    runs-on: [self-hosted, windows, linkedin-outreach]
+    timeout-minutes: 45
+
+    env:
+      # Scheduled runs go live; manual runs honour the dropdown.
+      OUTREACH_DRY_RUN: >-
+        ${{ (github.event_name == 'workflow_dispatch'
+             && github.event.inputs.mode == 'dry-run') && 'true' || 'false' }}
+      OUTREACH_BROWSER_HEADLESS: "true"
+      PYTHONUTF8: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # .env is gitignored, so CI builds one from the committed example and
+      # lets real environment variables above override what matters.
+      - name: Prepare configuration
+        shell: pwsh
+        run: |
+          if (-not (Test-Path ".env")) { Copy-Item ".env.example" ".env" }
+          $q = "${{ github.event.inputs.campaign_query }}"
+          if ($q) {
+            Write-Host "Overriding search query: $q"
+            "OUTREACH_SEARCH_QUERY=$q" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          }
+
+      # start.ps1 bootstraps deps, verifies the session, and runs one pass.
+      - name: Run outreach
+        shell: pwsh
+        run: |
+          $stage = "${{ github.event.inputs.stage }}"
+          if (-not $stage) { $stage = "all" }
+          $params = @{ Once = $true; Mode = $stage }
+          if ($env:OUTREACH_DRY_RUN -eq "false") { $params.Live = $true }
+          Write-Host "start.ps1 -Once -Mode $stage $(if ($params.Live) { '-Live' })"
+          .\start.ps1 @params
+
+      - name: Upload Excel report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: outreach-log-${{ github.run_number }}
+          path: outreach_log*.xlsx
+          if-no-files-found: warn
+          retention-days: 30

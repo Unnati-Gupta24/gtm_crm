@@ -1,0 +1,69 @@
+# Copy this to campaigns.yaml and edit.
+#
+# Every field except `id` and `dm_body` is optional, but each campaign needs at
+# least one targeting field. Facet lists (locations, companies, industries,
+# schools) accept at most 10 values each -- that is LinkedIn's own limit.
+#
+# Template placeholders available in invite_note and dm_body:
+#   {first_name}  {name}  {headline}  {company}  {location}
+# Unknown placeholders render as empty strings rather than erroring.
+
+campaigns:
+  - id: fintech-founders-blr
+    enabled: true
+
+    # --- Targeting -------------------------------------------------------
+    query: "fintech founder"          # natural-language or Boolean keywords
+    title: "Founder"                  # LinkedIn's visible Title keyword box
+    locations:
+      - "Bengaluru, Karnataka, India"
+    industries:
+      - "Financial Services"
+    connection_degrees:               # first | second | third_or_more
+      - second
+
+    # --- Messaging -------------------------------------------------------
+    # Invite note: LinkedIn caps this at 200 characters. Longer notes are
+    # truncated with an ellipsis rather than rejected.
+    invite_note: >-
+      Hi {first_name}, I work on payments infrastructure and follow what
+      you're building. Would love to connect.
+
+    # Sent only AFTER they accept. Never sent as a cold message.
+    dm_body: |
+      Thanks for connecting, {first_name}!
+
+      I'm working on payments infrastructure and noticed your work at
+      {company}. Curious how you're currently handling reconciliation at
+      scale -- happy to share what we've learned if it's useful.
+
+      Would a short call next week make sense?
+
+    # --- Optional per-campaign caps (override the global .env.outreach) ---
+    max_discover: 25
+    max_invites: 5
+    max_dms: 5
+
+  - id: payments-eng-leads
+    enabled: false                    # flip to true when you're ready
+
+    title_keywords: "engineering manager payments"
+    current_companies:
+      - "Razorpay"
+      - "PhonePe"
+    locations:
+      - "India"
+    connection_degrees:
+      - second
+      - third_or_more
+
+    invite_note: "Hi {first_name}, fellow payments engineer here -- would be great to connect."
+
+    dm_body: |
+      Thanks for accepting, {first_name}!
+
+      I'm curious how your team approaches settlement reconciliation.
+      If you're open to it, I'd love to swap notes sometime.
+
+    max_invites: 3
+    max_dms: 3
